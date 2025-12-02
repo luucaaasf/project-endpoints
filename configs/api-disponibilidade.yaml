@@ -1,9 +1,9 @@
 zabbix:
-  host: "flower"
+  host: "api-disponibilidade"
   groups:
     - groupid: "22"
   macros:
-    '{$CERT.WEBSITE.HOSTNAME}': "flower.minhabiblioteca.com.br"
+    '{$CERT.WEBSITE.HOSTNAME}': "https://api.utrip.cloud/availability/health"
     '{$CERT.WEBSITE.IP}': ""
   web_scenarios:
     - name: "Check Authenticated URL"
@@ -12,11 +12,11 @@ zabbix:
       agent: "Zabbix"
       steps:
         - name: "Step Web"
-          url: "flower.minhabiblioteca.com.br"
+          url: "https://api.utrip.cloud/availability/health"
           status_codes: "200"
           timeout: "15s"
           no: 1
   triggers:
-    - name: "Site flower.minhabiblioteca.com.br indisponivel"
-      expression: "last(/flower/web.test.fail[Check Authenticated URL],#3)=1"
+    - name: "Site https://api.utrip.cloud/availability/health indisponivel"
+      expression: "last(/api-disponibilidade/web.test.fail[Check Authenticated URL],#3)=1"
       priority: 5
