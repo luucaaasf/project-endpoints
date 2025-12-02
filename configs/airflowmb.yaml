@@ -1,0 +1,22 @@
+zabbix:
+  host: "airflowmb"
+  groups:
+    - groupid: "22"
+  macros:
+    '{$CERT.WEBSITE.HOSTNAME}': "https://airflowmb.minhabiblioteca.com.br"
+    '{$CERT.WEBSITE.IP}': ""
+  web_scenarios:
+    - name: "Check Authenticated URL"
+      delay: "5m"
+      retries: "1"
+      agent: "Zabbix"
+      steps:
+        - name: "Step Web"
+          url: "https://airflowmb.minhabiblioteca.com.br"
+          status_codes: "200"
+          timeout: "15s"
+          no: 1
+  triggers:
+    - name: "Site https://airflowmb.minhabiblioteca.com.br indisponivel"
+      expression: "last(/airflowmb/web.test.fail[Check Authenticated URL],#3)=1"
+      priority: 5

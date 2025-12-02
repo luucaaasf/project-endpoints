@@ -1,0 +1,29 @@
+zabbix:
+  host: "check.exemplo.com"
+  interfaces:
+    - type: 1
+      main: 1
+      useip: 1
+      ip: "127.0.0.1"
+      dns: ""
+      port: "10050"
+  groups:
+    - groupid: "34"
+  macros:
+    '{$CERT.WEBSITE.HOSTNAME}': "check.exemplo.com"
+    '{$CERT.WEBSITE.IP}': "1.1.1.1"
+  web_scenarios:
+    - name: "Check check.exemplo.com"
+      delay: "5m"
+      retries: "1"
+      agent: "Zabbix"
+      steps:
+        - name: "Step Web"
+          url: "https://www.check.exemplo.com"
+          status_codes: "200"
+          timeout: "15s"
+          no: 1
+  triggers:
+    - name: "Site check.exemplo.com indisponivel"
+      expression: "last(/check.exemplo.com/web.test.fail[Check check.exemplo.com],#3)=1"
+      priority: 5
