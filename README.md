@@ -33,9 +33,24 @@ git push
    - ✅ Faz deploy no Zabbix
    - ✅ Limpa arquivos temporários
 
-> 📖 Veja [SETUP_GITHUB.md](SETUP_GITHUB.md) para configurar os secrets do GitHub
+---
 
-### Teste Local (Opcional)
+## 🔐 Configuração Inicial (GitHub Secrets)
+
+Antes do primeiro uso, configure os secrets no GitHub:
+
+1. Acesse: **Settings** → **Secrets and variables** → **Actions**
+2. Adicione:
+
+**ZABBIX_API_URL**
+- Value: `http://54.198.250.98/api_jsonrpc.php`
+
+**ZABBIX_TOKEN**
+- Value: `<seu-token-do-zabbix>`
+
+---
+
+## 🧪 Teste Local (Opcional)
 
 Se quiser testar antes de fazer push:
 
@@ -91,3 +106,51 @@ projeto-endpoints/
 
 Nota: A pasta configs/ é gerada temporariamente e não é versionada
 ```
+
+---
+
+## 🔧 Troubleshooting
+
+### Erro: Falha ao criar host no Zabbix
+
+**Possíveis causas:**
+1. Secrets não configurados no GitHub
+2. URL incorreta do Zabbix
+3. Token inválido ou expirado
+
+**Solução:**
+- Verifique os secrets em Settings → Secrets and variables → Actions
+- URL correta: `http://54.198.250.98/api_jsonrpc.php` (sem `/zabbix`)
+- Gere um novo token se necessário
+
+### Erro 403 no Git Push
+
+**Solução:** Já resolvido! O workflow tem permissão `contents: write`
+
+### Testar conexão com Zabbix
+
+```bash
+curl -X POST "http://54.198.250.98/api_jsonrpc.php" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer SEU_TOKEN" \
+  -d '{"jsonrpc":"2.0","method":"host.get","params":{"limit":1},"id":1}'
+```
+
+---
+
+## 📊 Monitoramento
+
+Acompanhe a execução da pipeline:
+1. Acesse **Actions** no GitHub
+2. Veja o workflow "Deploy Endpoints to Zabbix"
+3. Clique na execução para ver logs detalhados
+
+---
+
+## 🎯 Vantagens deste Fluxo
+
+✅ **Simples** - Apenas 1 arquivo CSV  
+✅ **Rápido** - Sem edição manual de YAMLs  
+✅ **Limpo** - Git só trackeia o essencial  
+✅ **Seguro** - Configs gerados dinamicamente  
+✅ **Auditável** - Histórico claro no CSV
