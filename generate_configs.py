@@ -15,13 +15,6 @@ CSV_FILE = os.environ.get("CSV_FILE", "endpoints.csv")
 CONFIG_DIR = os.environ.get("CONFIG_DIR", "configs")
 TEMPLATE = """zabbix:
   host: "{host}"
-  interfaces:
-    - type: 1
-      main: 1
-      useip: 1
-      ip: "127.0.0.1"
-      dns: ""
-      port: "10050"
   groups:
     - groupid: "{groupid}"
   macros:

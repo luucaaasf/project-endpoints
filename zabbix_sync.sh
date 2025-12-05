@@ -45,7 +45,6 @@ EOF
   fi
 
   echo "📦 Criando novo host: $host" >&2
-  local interfaces_json=$(yq e -o=json '.zabbix.interfaces' "$VALUES_FILE")
   local groups_json=$(yq e -o=json '.zabbix.groups' "$VALUES_FILE")
 
   local response=$(curl -s -X POST "$ZBX_API_URL" "${HEADERS[@]}" -d @- <<EOF
@@ -54,7 +53,6 @@ EOF
   "method": "host.create",
   "params": {
     "host": "$host",
-    "interfaces": $interfaces_json,
     "groups": $groups_json
   },
   "id": 2
