@@ -8,13 +8,16 @@ on:
     paths:
       - 'endpoints.csv'
       - 'generate_configs.py'
-      - 'configs/**'
+      - 'deploy.sh'
+      - 'zabbix_sync.sh'
 
   workflow_dispatch:  # Permite executar manualmente
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Permite fazer push de commits
     
     steps:
       - name: Checkout code
@@ -25,10 +28,7 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Generate config files
-        run: |
-          echo "📝 Gerando arquivos de configuração..."
-          python generate_configs.py
+      # Não precisa gerar configs aqui, o deploy.sh faz isso dinamicamente
 
       - name: Install dependencies
         run: |
@@ -46,6 +46,15 @@ jobs:
         run: |
           echo "🚀 Iniciando deploy no Zabbix..."
           
+          # Verifica se as variáveis estão definidas
+          if [ -z "$ZBX_API_URL" ] || [ -z "$ZBX_TOKEN" ]; then
+            echo "❌ ERRO: Secrets ZABBIX_API_URL ou ZABBIX_TOKEN não configurados!"
+            echo "Configure em: Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          
+          echo "✅ API URL configurada: $ZBX_API_URL"
+          
           # Converte line endings para Unix
           dos2unix zabbix_sync.sh deploy.sh 2>/dev/null || {
             sed -i 's/\r$//' zabbix_sync.sh
@@ -58,26 +67,7 @@ jobs:
           
           chmod +x zabbix_sync.sh
           chmod +x deploy.sh
+          chmod +x generate_configs.py
           
-          # Atualiza o caminho no deploy.sh para o ambiente CI
-          sed -i 's|CONFIG_DIR="/opt/nuageit/configs"|CONFIG_DIR="./configs"|' deploy.sh
-          sed -i 's|SCRIPT_PATH="/opt/nuageit/zabbix_sync.sh"|SCRIPT_PATH="./zabbix_sync.sh"|' deploy.sh
-          
-          # Executa o deploy
+          # Executa o deploy (gera configs dinamicamente)
           ./deploy.sh
-
-      - name: Commit generated configs (if needed)
-        if: success()
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          
-          git add configs/
-          
-          if git diff --staged --quiet; then
-            echo "✅ Nenhuma alteração nos configs"
-          else
-            git commit -m "chore: update generated config files [skip ci]"
-            git push
-          fi
-        continue-on-error: true

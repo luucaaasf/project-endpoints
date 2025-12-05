@@ -15,7 +15,7 @@ _get_or_create_host() {
   export CURRENT_HOST="$host"
   echo "🔎 Verificando se host '$host' já existe..." >&2
 
-  local hostid=$(curl -s -X POST "$ZBX_API_URL" "${HEADERS[@]}" -d @- <<EOF | jq -r '.result[0].hostid // empty'
+  local response=$(curl -s -X POST "$ZBX_API_URL" "${HEADERS[@]}" -d @- <<EOF
 {
   "jsonrpc": "2.0",
   "method": "host.get",
@@ -28,6 +28,15 @@ _get_or_create_host() {
 }
 EOF
 )
+
+  # Debug: mostra resposta se houver erro
+  if echo "$response" | jq -e '.error' > /dev/null 2>&1; then
+    echo "❌ ERRO na API do Zabbix:" >&2
+    echo "$response" | jq -r '.error.data' >&2
+    exit 1
+  fi
+
+  local hostid=$(echo "$response" | jq -r '.result[0].hostid // empty')
 
   if [ -n "$hostid" ]; then
     echo "✅ Host já existe com ID: $hostid" >&2
@@ -53,9 +62,17 @@ EOF
 EOF
 )
 
+  # Verifica se houve erro na resposta
+  if echo "$response" | jq -e '.error' > /dev/null 2>&1; then
+    echo "❌ ERRO ao criar host:" >&2
+    echo "$response" | jq -r '.error' >&2
+    exit 1
+  fi
+
   hostid=$(echo "$response" | jq -r '.result.hostids[0] // empty')
   if [ -z "$hostid" ]; then
-    echo "❌ Falha ao criar o host. Resposta: $response" >&2
+    echo "❌ Falha ao criar o host. Resposta completa:" >&2
+    echo "$response" >&2
     exit 1
   fi
 

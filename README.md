@@ -4,9 +4,9 @@ Projeto para facilitar o cadastro e monitoramento de endpoints no Zabbix.
 
 ## 🚀 Como usar
 
-### Opção 1: Automático via GitHub (Recomendado)
+### Adicionar Novos Endpoints (Super Simples!)
 
-1. **Adicione novos endpoints** no arquivo `endpoints.csv`:
+1. **Edite apenas o arquivo `endpoints.csv`:**
 
 ```csv
 host,url,groupid
@@ -20,7 +20,7 @@ api-reservas,https://api.utrip.cloud/bookings/health,22
 - `url`: URL completa do endpoint de health check
 - `groupid`: ID do grupo no Zabbix (geralmente 22)
 
-2. **Commit e push**:
+2. **Commit e push:**
 
 ```bash
 git add endpoints.csv
@@ -28,30 +28,43 @@ git commit -m "feat: adicionar novos endpoints"
 git push
 ```
 
-3. **Pronto!** A pipeline do GitHub Actions vai:
-   - Gerar os arquivos YAML automaticamente
-   - Fazer deploy no Zabbix
-   - Commitar os configs gerados
+3. **Pronto!** A pipeline automaticamente:
+   - ✅ Gera as configurações YAML (temporárias)
+   - ✅ Faz deploy no Zabbix
+   - ✅ Limpa arquivos temporários
 
 > 📖 Veja [SETUP_GITHUB.md](SETUP_GITHUB.md) para configurar os secrets do GitHub
 
-### Opção 2: Manual (Local)
+### Teste Local (Opcional)
 
-1. Edite `endpoints.csv`
-2. Execute: `python generate_configs.py`
-3. Execute: `./deploy.sh`
+Se quiser testar antes de fazer push:
+
+```bash
+./deploy.sh
+```
+
+O script gera os configs temporariamente e aplica no Zabbix.
 
 ## 📝 Exemplo
 
-**Antes** - Você precisava editar 22 linhas manualmente:
+**Antes** - Criar e editar 30+ linhas de YAML manualmente:
 ```yaml
 zabbix:
   host: "api-exemplo"
+  interfaces:
+    - type: 1
+      main: 1
+      useip: 1
+      ip: "127.0.0.1"
+      dns: ""
+      port: "10050"
   groups:
     - groupid: "22"
   macros:
     '{$CERT.WEBSITE.HOSTNAME}': "https://..."
-  # ... mais 15 linhas
+  web_scenarios:
+    - name: "Check Authenticated URL"
+      # ... mais 15 linhas
 ```
 
 **Agora** - Apenas uma linha no CSV:
@@ -59,18 +72,22 @@ zabbix:
 api-exemplo,https://api.exemplo.com/health,22
 ```
 
+**Deploy automático** - Só fazer commit!
+
 ## 🔧 Requisitos
 
 - Python 3.6+
 - Arquivos `.csv` com encoding UTF-8
 
-## 📂 Estrutura
+## 📌 Estrutura
 
 ```
 projeto-endpoints/
-├── endpoints.csv          # ← Edite aqui para adicionar endpoints
-├── generate_configs.py    # ← Execute para gerar YAMLs
-├── configs/              # ← Arquivos YAML gerados automaticamente
-├── deploy.sh             # ← Deploy para Zabbix
-└── zabbix_sync.sh        # ← Script de sincronização
+├── endpoints.csv          # ← APENAS EDITE ESTE ARQUIVO!
+├── generate_configs.py    # Script de geração (automático)
+├── deploy.sh             # Script de deploy (automático)
+├── zabbix_sync.sh        # Script de sincronização com Zabbix
+└── .github/workflows/    # Pipeline do GitHub Actions
+
+Nota: A pasta configs/ é gerada temporariamente e não é versionada
 ```
