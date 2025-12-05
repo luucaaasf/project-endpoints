@@ -1,0 +1,3 @@
+host,url,groupid
+api-cotacoes,https://api.utrip.cloud/quote/health,22
+api-disponibilidade,https://api.utrip.cloud/availability/health,22

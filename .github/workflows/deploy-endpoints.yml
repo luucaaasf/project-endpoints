@@ -1,0 +1,77 @@
+name: Deploy Endpoints to Zabbix
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'endpoints.csv'
+      - 'generate_configs.py'
+      - 'configs/**'
+
+  workflow_dispatch:  # Permite executar manualmente
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Generate config files
+        run: |
+          echo "📝 Gerando arquivos de configuração..."
+          python generate_configs.py
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl jq
+          
+          # Instalar yq (YAML processor)
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Deploy to Zabbix
+        env:
+          ZBX_API_URL: ${{ secrets.ZABBIX_API_URL }}
+          ZBX_TOKEN: ${{ secrets.ZABBIX_TOKEN }}
+        run: |
+          echo "🚀 Iniciando deploy no Zabbix..."
+          
+          # Atualiza as variáveis no script
+          sed -i "s|ZBX_API_URL=.*|ZBX_API_URL=\"$ZBX_API_URL\"|" zabbix_sync.sh
+          sed -i "s|ZBX_TOKEN=.*|ZBX_TOKEN=\"$ZBX_TOKEN\"|" zabbix_sync.sh
+          
+          chmod +x zabbix_sync.sh
+          chmod +x deploy.sh
+          
+          # Atualiza o caminho no deploy.sh para o ambiente CI
+          sed -i 's|CONFIG_DIR="/opt/nuageit/configs"|CONFIG_DIR="./configs"|' deploy.sh
+          sed -i 's|SCRIPT_PATH="/opt/nuageit/zabbix_sync.sh"|SCRIPT_PATH="./zabbix_sync.sh"|' deploy.sh
+          
+          # Executa o deploy
+          ./deploy.sh
+
+      - name: Commit generated configs (if needed)
+        if: success()
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          git add configs/
+          
+          if git diff --staged --quiet; then
+            echo "✅ Nenhuma alteração nos configs"
+          else
+            git commit -m "chore: update generated config files [skip ci]"
+            git push
+          fi
+        continue-on-error: true
