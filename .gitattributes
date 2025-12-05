@@ -1,0 +1,14 @@
+# Força line endings Unix (LF) para scripts shell
+*.sh text eol=lf
+
+# Arquivos de texto padrão
+*.py text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.csv text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+
+# Arquivos que devem manter line endings do Windows
+*.bat text eol=crlf
+*.ps1 text eol=crlf

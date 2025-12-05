@@ -13,7 +13,7 @@ Para a pipeline funcionar, você precisa configurar os **secrets** do GitHub com
 
 ### Secret 1: ZABBIX_API_URL
 - **Name:** `ZABBIX_API_URL`
-- **Value:** `http://54.198.250.98/zabbix/api_jsonrpc.php`
+- **Value:** `http://54.198.250.98/api_jsonrpc.php`
 
 ### Secret 2: ZABBIX_TOKEN
 - **Name:** `ZABBIX_TOKEN`

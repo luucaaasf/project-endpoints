@@ -46,6 +46,12 @@ jobs:
         run: |
           echo "🚀 Iniciando deploy no Zabbix..."
           
+          # Converte line endings para Unix
+          dos2unix zabbix_sync.sh deploy.sh 2>/dev/null || {
+            sed -i 's/\r$//' zabbix_sync.sh
+            sed -i 's/\r$//' deploy.sh
+          }
+          
           # Atualiza as variáveis no script
           sed -i "s|ZBX_API_URL=.*|ZBX_API_URL=\"$ZBX_API_URL\"|" zabbix_sync.sh
           sed -i "s|ZBX_TOKEN=.*|ZBX_TOKEN=\"$ZBX_TOKEN\"|" zabbix_sync.sh

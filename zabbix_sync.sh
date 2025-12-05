@@ -5,7 +5,7 @@ if [ -z "$VALUES_FILE" ]; then
   exit 1
 fi
 
-ZBX_API_URL="http://54.198.250.98/zabbix/api_jsonrpc.php"
+ZBX_API_URL="http://54.198.250.98/api_jsonrpc.php"
 ZBX_TOKEN="86c9c994d355f1db4087355ae9eb662dfea5a83dd77537576256df442af35eb8"
 HEADERS=(-H "Content-Type: application/json" -H "Authorization: Bearer $ZBX_TOKEN")
 
